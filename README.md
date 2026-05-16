@@ -45,6 +45,6 @@ You can also export from the browser while the preview server is running — cli
 - Tables, strikethrough, autolinks (CommonMark extensions)
 - External links open in a new tab
 
-## LICENSE
+## License
 
 MIT
