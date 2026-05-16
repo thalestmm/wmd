@@ -21,15 +21,12 @@ templ Page(content template.HTML) {
 			</script>
 			<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 			<style>
-				/* PDF viewer shell */
 				html, body {
 					margin: 0;
 					padding: 0;
 					background: #404040;
 					min-height: 100vh;
 				}
-
-				/* Override latex.css body defaults */
 				body.libertinus {
 					max-width: none;
 					padding: 2.5rem 0;
@@ -37,8 +34,6 @@ templ Page(content template.HTML) {
 					flex-direction: column;
 					align-items: center;
 				}
-
-				/* A4 page card */
 				main {
 					background: #fff;
 					width: 210mm;
@@ -46,35 +41,75 @@ templ Page(content template.HTML) {
 					padding: 25mm 20mm;
 					box-sizing: border-box;
 					box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3);
+					border: 1px solid #222;
 					margin: 0 auto;
-					/* keep latex.css font size sane */
 					font-size: 11pt;
 					line-height: 1.6;
 				}
-
-				/* Page break simulation between multiple "pages" when content overflows */
-				@media screen {
-					main {
-						border: 1px solid #222;
+				#download-pdf {
+					position: fixed;
+					top: 1rem;
+					right: 1rem;
+					padding: 0.45rem 1rem;
+					background: #1a73e8;
+					color: #fff;
+					border: none;
+					border-radius: 4px;
+					font-size: 0.82rem;
+					font-family: sans-serif;
+					cursor: pointer;
+					box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+					z-index: 1000;
+					transition: background 0.15s;
+				}
+				#download-pdf:hover  { background: #1558b0; }
+				#download-pdf:disabled { background: #777; cursor: wait; }
+				@media print {
+					html, body {
+						background: white !important;
 					}
+					body.libertinus {
+						padding: 0 !important;
+						display: block !important;
+					}
+					main {
+						box-shadow: none !important;
+						border: none !important;
+						width: 100% !important;
+						padding: 15mm !important;
+						min-height: auto !important;
+					}
+					#download-pdf { display: none !important; }
 				}
 			</style>
 		</head>
 		<body class="libertinus">
+			<button id="download-pdf">Download PDF</button>
 			<main>
 				@templ.Raw(string(content))
 			</main>
 			<script>
 				const ws = new WebSocket("ws://" + window.location.host + "/ws");
 				ws.onmessage = function(event) {
-					if (event.data === "reload") {
-						window.location.reload();
-					}
+					if (event.data === "reload") window.location.reload();
 				};
 				ws.onclose = function() {
-					console.log("Connection closed. Reconnecting...");
 					setTimeout(() => window.location.reload(), 2000);
 				};
+
+				const btn = document.getElementById('download-pdf');
+				btn.addEventListener('click', () => {
+					btn.disabled = true;
+					btn.textContent = 'Generating…';
+					// Navigate to /pdf — server returns attachment, page stays loaded.
+					const a = document.createElement('a');
+					a.href = '/pdf';
+					a.click();
+					setTimeout(() => {
+						btn.disabled = false;
+						btn.textContent = 'Download PDF';
+					}, 4000);
+				});
 			</script>
 		</body>
 	</html>
