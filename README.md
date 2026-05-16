@@ -44,3 +44,7 @@ You can also export from the browser while the preview server is running — cli
 - LaTeX math via MathJax: inline `$...$` and display `$$...$$`
 - Tables, strikethrough, autolinks (CommonMark extensions)
 - External links open in a new tab
+
+## LICENSE
+
+MIT
