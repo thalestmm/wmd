@@ -1,1 +1,3 @@
 - Add formatting config support (page format, indentation, font sizes, etc)
+- Add metadata support (via comments or config file)
+- Add init command for setting up the config
