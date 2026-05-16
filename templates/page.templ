@@ -1,0 +1,81 @@
+package templates
+
+import "html/template"
+
+templ Page(content template.HTML) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>LaTeX Markdown Preview</title>
+			<link rel="stylesheet" href="https://latex.now.sh/style.css"/>
+			<script>
+				MathJax = {
+					tex: {
+						inlineMath: [['$', '$'], ['\\(', '\\)']],
+						displayMath: [['$$', '$$'], ['\\[', '\\]']],
+						processEscapes: true
+					}
+				};
+			</script>
+			<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+			<style>
+				/* PDF viewer shell */
+				html, body {
+					margin: 0;
+					padding: 0;
+					background: #404040;
+					min-height: 100vh;
+				}
+
+				/* Override latex.css body defaults */
+				body.libertinus {
+					max-width: none;
+					padding: 2.5rem 0;
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+				}
+
+				/* A4 page card */
+				main {
+					background: #fff;
+					width: 210mm;
+					min-height: 297mm;
+					padding: 25mm 20mm;
+					box-sizing: border-box;
+					box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3);
+					margin: 0 auto;
+					/* keep latex.css font size sane */
+					font-size: 11pt;
+					line-height: 1.6;
+				}
+
+				/* Page break simulation between multiple "pages" when content overflows */
+				@media screen {
+					main {
+						border: 1px solid #222;
+					}
+				}
+			</style>
+		</head>
+		<body class="libertinus">
+			<main>
+				@templ.Raw(string(content))
+			</main>
+			<script>
+				const ws = new WebSocket("ws://" + window.location.host + "/ws");
+				ws.onmessage = function(event) {
+					if (event.data === "reload") {
+						window.location.reload();
+					}
+				};
+				ws.onclose = function() {
+					console.log("Connection closed. Reconnecting...");
+					setTimeout(() => window.location.reload(), 2000);
+				};
+			</script>
+		</body>
+	</html>
+}
