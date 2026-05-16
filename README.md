@@ -1,6 +1,6 @@
 # wmd
 
-***wmd** = **w**atch **m**ark**d**own.*
+**wmd** = **w**atch **m**ark**d**own.
 
 Live markdown preview with hot reload and PDF export. Renders with LaTeX typography and MathJax support.
 
