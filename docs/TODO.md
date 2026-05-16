@@ -1,0 +1,1 @@
+- Add formatting config support (page format, indentation, font sizes, etc)
