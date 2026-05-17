@@ -2,3 +2,4 @@
 - Add metadata support (via comments or config file)
 - Add init command for setting up the config
 - Include example gallery
+- Add custom pagebreak syntax support \<!-- /pagebreak --> == <div style="page-break-after: always;"></div>
