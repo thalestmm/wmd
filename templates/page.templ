@@ -64,6 +64,9 @@ templ Page(content template.HTML) {
 				}
 				#download-pdf:hover  { background: #1558b0; }
 				#download-pdf:disabled { background: #777; cursor: wait; }
+				@page {
+					margin: 20mm;
+				}
 				@media print {
 					html, body {
 						background: white !important;
@@ -76,7 +79,7 @@ templ Page(content template.HTML) {
 						box-shadow: none !important;
 						border: none !important;
 						width: 100% !important;
-						padding: 15mm !important;
+						padding: 0 !important;
 						min-height: auto !important;
 					}
 					#download-pdf { display: none !important; }
