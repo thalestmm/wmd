@@ -24,16 +24,22 @@ import (
 var (
 	serveFilePath string
 	serverAddr    string
+	autoFormat    bool
 	upgrader      = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
 	clients       = make(map[*websocket.Conn]bool)
 	clientsMu     sync.Mutex
 )
 
 var serveCmd = &cobra.Command{
-	Use:   "serve <file.md>",
-	Short: "Start hot-reload preview server",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runServe,
+	Use:     "serve <file.md>",
+	Short:   "Start hot-reload preview server",
+	Aliases: []string{"s", "watch", "w"},
+	Args:    cobra.ExactArgs(1),
+	RunE:    runServe,
+}
+
+func init() {
+	serveCmd.Flags().BoolVarP(&autoFormat, "auto-format", "f", false, "format file on save")
 }
 
 func runServe(_ *cobra.Command, args []string) error {
@@ -128,6 +134,11 @@ func watchFile(target string) {
 			}
 			if filepath.Clean(event.Name) == filepath.Clean(target) {
 				if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create {
+					if autoFormat {
+						if err := formatFile(target); err != nil {
+							log.Println("Auto-format error:", err)
+						}
+					}
 					broadcastReload()
 				}
 			}

@@ -17,10 +17,11 @@ import (
 var pdfOutput string
 
 var pdfCmd = &cobra.Command{
-	Use:   "pdf <file.md>",
-	Short: "Render markdown to PDF",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runPDF,
+	Use:     "pdf <file.md>",
+	Short:   "Render markdown to PDF",
+	Aliases: []string{"render", "export"},
+	Args:    cobra.ExactArgs(1),
+	RunE:    runPDF,
 }
 
 func init() {

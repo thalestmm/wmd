@@ -29,4 +29,6 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(pdfCmd)
+	rootCmd.AddCommand(formatCmd)
+	rootCmd.Flags().BoolVarP(&autoFormat, "auto-format", "f", false, "format file on save")
 }
