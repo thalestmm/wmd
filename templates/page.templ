@@ -12,6 +12,7 @@ templ Page(content template.HTML) {
 			<link rel="stylesheet" href="https://latex.now.sh/style.css"/>
 			<script>
 				MathJax = {
+					startup: { typeset: false },
 					tex: {
 						inlineMath: [['$', '$'], ['\\(', '\\)']],
 						displayMath: [['$$', '$$'], ['\\[', '\\]']],
@@ -48,6 +49,37 @@ templ Page(content template.HTML) {
 				}
 				main p {
 					text-align: justify;
+				}
+				figure.mermaid-figure {
+					margin: 1.7em 0;
+					padding: 1.25em 0.55em 1.05em;
+					background:
+						linear-gradient(#c9d0d8, #c9d0d8) 0 0 / 100% 1px no-repeat,
+						linear-gradient(#c9d0d8, #c9d0d8) 0 100% / 100% 1px no-repeat,
+						#f8fafb;
+					overflow-x: auto;
+				}
+				figure.mermaid-figure pre.mermaid {
+					margin: 0;
+					padding: 0;
+					border: none;
+					background: transparent;
+					box-shadow: none;
+					overflow: visible;
+					text-align: center;
+					font-family: inherit;
+					font-size: inherit;
+					line-height: inherit;
+					white-space: pre;
+				}
+				figure.mermaid-figure svg {
+					max-width: 100%;
+					height: auto;
+				}
+				figure.mermaid-figure .error-icon + text,
+				figure.mermaid-figure .error-text {
+					font-family: ui-monospace, "SF Mono", Menlo, monospace;
+					font-size: 0.82em;
 				}
 				#download-pdf {
 					position: fixed;
@@ -86,6 +118,11 @@ templ Page(content template.HTML) {
 						min-height: auto !important;
 					}
 					#download-pdf { display: none !important; }
+					figure.mermaid-figure {
+						break-inside: avoid;
+						background: none;
+						padding: 0.4em 0;
+					}
 				}
 			</style>
 		</head>
@@ -94,6 +131,7 @@ templ Page(content template.HTML) {
 			<main>
 				@templ.Raw(string(content))
 			</main>
+			<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 			<script>
 				const ws = new WebSocket("ws://" + window.location.host + "/ws");
 				ws.onmessage = function(event) {
@@ -116,6 +154,89 @@ templ Page(content template.HTML) {
 						btn.textContent = 'Download PDF';
 					}, 4000);
 				});
+
+				(async function renderDiagrams() {
+					try {
+						if (window.mermaid) {
+							mermaid.initialize({
+								startOnLoad: false,
+								securityLevel: 'strict',
+								theme: 'base',
+								look: 'classic',
+								fontFamily: 'Libertinus Serif, "Linux Libertine", Georgia, "Times New Roman", serif',
+								themeVariables: {
+									darkMode: false,
+									background: '#f8fafb',
+									fontFamily: 'Libertinus Serif, "Linux Libertine", Georgia, "Times New Roman", serif',
+									fontSize: '16px',
+									textColor: '#1c1917',
+									lineColor: '#334155',
+									primaryColor: '#f3f6f9',
+									primaryTextColor: '#1c1917',
+									primaryBorderColor: '#243f5c',
+									secondaryColor: '#f3eee4',
+									secondaryTextColor: '#1c1917',
+									secondaryBorderColor: '#8a7355',
+									tertiaryColor: '#fbfbfb',
+									tertiaryTextColor: '#1c1917',
+									tertiaryBorderColor: '#c5c0b8',
+									mainBkg: '#f3f6f9',
+									nodeBorder: '#243f5c',
+									clusterBkg: '#f4efe6',
+									clusterBorder: '#a89478',
+									titleColor: '#1c1917',
+									edgeLabelBackground: '#f8fafb',
+									nodeTextColor: '#1c1917',
+									defaultLinkColor: '#334155',
+									arrowheadColor: '#334155',
+									labelBoxBkgColor: '#ffffff',
+									labelBoxBorderColor: '#243f5c',
+									labelTextColor: '#1c1917'
+								},
+								themeCSS: [
+									'.node rect,.node circle,.node ellipse,.node polygon,.node path{stroke-width:1.5px;}',
+									'.edgePath .path,.flowchart-link{stroke-width:1.4px;}',
+									'.cluster rect{stroke-width:1.1px;}',
+									'.cluster-label,.cluster span{font-style:italic;}'
+								].join(''),
+								flowchart: {
+									htmlLabels: true,
+									curve: 'basis',
+									padding: 14,
+									nodeSpacing: 28,
+									rankSpacing: 48,
+									diagramPadding: 6,
+									wrappingWidth: 240,
+									subGraphTitleMargin: { top: 8, bottom: 10 },
+									useMaxWidth: true
+								}
+							});
+							const nodes = document.querySelectorAll('pre.mermaid');
+							if (nodes.length) {
+								await mermaid.run({ nodes: nodes });
+							}
+						}
+						if (document.fonts && document.fonts.ready) {
+							await document.fonts.ready;
+						}
+						await new Promise(function (resolve) {
+							const started = Date.now();
+							(function wait() {
+								if (window.MathJax && MathJax.typesetPromise) {
+									MathJax.typesetPromise().then(resolve).catch(resolve);
+									return;
+								}
+								if (Date.now() - started > 20000) {
+									resolve();
+									return;
+								}
+								requestAnimationFrame(wait);
+							})();
+						});
+					} finally {
+						document.documentElement.setAttribute('data-wmd-ready', 'true');
+					}
+				})();
 			</script>
 		</body>
 	</html>

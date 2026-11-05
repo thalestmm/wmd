@@ -29,8 +29,8 @@ func FromURL(url string) ([]byte, error) {
 	if err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
 		chromedp.WaitReady("body", chromedp.ByQuery),
-		// Give MathJax/CSS time to fully render before printing.
-		chromedp.Sleep(2*time.Second),
+		// Wait until mermaid diagrams, MathJax, and webfonts have finished.
+		chromedp.WaitReady(`html[data-wmd-ready="true"]`, chromedp.ByQuery),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			var err error
 			buf, _, err = page.PrintToPDF().
