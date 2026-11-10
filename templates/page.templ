@@ -57,7 +57,7 @@ templ Page(content template.HTML) {
 						linear-gradient(#c9d0d8, #c9d0d8) 0 0 / 100% 1px no-repeat,
 						linear-gradient(#c9d0d8, #c9d0d8) 0 100% / 100% 1px no-repeat,
 						#f8fafb;
-					overflow-x: auto;
+					overflow: visible;
 				}
 				figure.mermaid-figure pre.mermaid {
 					margin: 0;
@@ -75,6 +75,7 @@ templ Page(content template.HTML) {
 				figure.mermaid-figure svg {
 					max-width: 100%;
 					height: auto;
+					overflow: visible;
 				}
 				figure.mermaid-figure .error-icon + text,
 				figure.mermaid-figure .error-text {
@@ -126,11 +127,7 @@ templ Page(content template.HTML) {
 						page-break-inside: avoid;
 						background: none;
 						padding: 0.4em 0;
-						overflow: hidden;
-					}
-					figure.mermaid-figure svg {
-						max-width: 100% !important;
-						max-height: 230mm !important;
+						overflow: visible;
 					}
 				}
 			</style>
@@ -167,21 +164,28 @@ templ Page(content template.HTML) {
 				// Freeze SVG layout size in mm. Transform scale is ignored by Chrome print pagination.
 				function fitMermaidToPage() {
 					const pxPerMm = 96 / 25.4;
-					const maxWmm = 170;
-					const maxHmm = 230;
+					const maxHmm = 232;
 					document.querySelectorAll('figure.mermaid-figure').forEach(function (figure) {
 						const svg = figure.querySelector('svg');
 						if (!svg) return;
-						const box = svg.getBoundingClientRect();
-						if (!box.width || !box.height) return;
-						const scale = Math.min(1, maxWmm / (box.width / pxPerMm), maxHmm / (box.height / pxPerMm));
-						const wMm = (box.width / pxPerMm) * scale;
-						const hMm = (box.height / pxPerMm) * scale;
+						const vb = svg.viewBox && svg.viewBox.baseVal;
+						if (vb && vb.width && vb.height) {
+							const pad = Math.max(vb.height * 0.04, 16);
+							svg.setAttribute('viewBox',
+								vb.x + ' ' + (vb.y - pad * 0.1) + ' ' + vb.width + ' ' + (vb.height + pad));
+						}
 						svg.removeAttribute('width');
 						svg.removeAttribute('height');
 						svg.style.maxWidth = '100%';
-						svg.style.width = wMm + 'mm';
-						svg.style.height = hMm + 'mm';
+						svg.style.maxHeight = 'none';
+						svg.style.width = '100%';
+						svg.style.height = 'auto';
+						const box = svg.getBoundingClientRect();
+						if (!box.width || !box.height) return;
+						const maxWmm = Math.max(figure.clientWidth / pxPerMm, 1);
+						const scale = Math.min(1, maxWmm / (box.width / pxPerMm), maxHmm / (box.height / pxPerMm));
+						svg.style.width = ((box.width / pxPerMm) * scale) + 'mm';
+						svg.style.height = ((box.height / pxPerMm) * scale) + 'mm';
 					});
 				}
 
