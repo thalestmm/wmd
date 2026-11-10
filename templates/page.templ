@@ -75,6 +75,7 @@ templ Page(content template.HTML) {
 				figure.mermaid-figure svg {
 					max-width: 100%;
 					height: auto;
+					transform-origin: top center;
 				}
 				figure.mermaid-figure .error-icon + text,
 				figure.mermaid-figure .error-text {
@@ -155,6 +156,27 @@ templ Page(content template.HTML) {
 					}, 4000);
 				});
 
+				// A4 content box: 210×297mm paper, @page 20mm margins.
+				function fitMermaidToPage() {
+					const mm = 96 / 25.4;
+					const maxH = (297 - 40 - 8) * mm;
+					const maxW = (210 - 40) * mm;
+					document.querySelectorAll('figure.mermaid-figure').forEach(function (figure) {
+						const svg = figure.querySelector('svg');
+						if (!svg) return;
+						svg.style.transform = '';
+						figure.style.height = '';
+						figure.style.overflow = '';
+						const box = svg.getBoundingClientRect();
+						if (!box.width || !box.height) return;
+						const scale = Math.min(1, maxH / box.height, maxW / box.width);
+						if (scale >= 0.999) return;
+						svg.style.transform = 'scale(' + scale + ')';
+						figure.style.overflow = 'hidden';
+						figure.style.height = (box.height * scale) + 'px';
+					});
+				}
+
 				(async function renderDiagrams() {
 					try {
 						if (window.mermaid) {
@@ -219,6 +241,7 @@ templ Page(content template.HTML) {
 						if (document.fonts && document.fonts.ready) {
 							await document.fonts.ready;
 						}
+						fitMermaidToPage();
 						await new Promise(function (resolve) {
 							const started = Date.now();
 							(function wait() {
