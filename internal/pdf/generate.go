@@ -27,6 +27,7 @@ func FromURL(url string) ([]byte, error) {
 
 	var buf []byte
 	if err := chromedp.Run(ctx,
+		chromedp.EmulateViewport(794, 1123),
 		chromedp.Navigate(url),
 		chromedp.WaitReady("body", chromedp.ByQuery),
 		// Wait until mermaid diagrams, MathJax, and webfonts have finished.
@@ -35,6 +36,7 @@ func FromURL(url string) ([]byte, error) {
 			var err error
 			buf, _, err = page.PrintToPDF().
 				WithPrintBackground(true).
+				WithPreferCSSPageSize(true).
 				WithPaperWidth(8.27).   // A4 inches
 				WithPaperHeight(11.69). // A4 inches
 				WithMarginTop(0).
